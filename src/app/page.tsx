@@ -4,8 +4,11 @@ import { ArrowRight, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
-import { products } from "@/lib/data"
+import { HomeCategories, Iproducts, products } from "@/lib/data"
+import ProductItem from "@/components/ProductCard"
 
+import CategoryGrid from "@/components/CategoryGrid"
+import ProductCarousel from "@/components/ProductCarousel"
 export default function Home() {
   // Filter products for different sections
   const featuredProducts = products.filter((product) => product.featured)
@@ -78,62 +81,30 @@ export default function Home() {
         </Carousel>
       </section>
 
-      {/* Featured Products */}
-      <section className="py-12">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
+      {/* Latest Products */}
+      <section className="py-10">
+        <div className="container w-full  px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between gap-4 items-center">
             <div>
               <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Featured Products</h2>
-              <p className="text-gray-500">Handpicked by our team for exceptional quality and style</p>
+              <p className="text-gray-500">Just landed in our store</p>
             </div>
             <Button variant="ghost" asChild className="gap-1">
-              <Link href="/products?featured=true">
+              <Link href="/products?sort=newest">
                 View All <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
           </div>
-          <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {featuredProducts.slice(0, 4).map((product) => (
-              <ProductCard key={product.id} product={product} />
+          <div className="mt-5 flex justify-center sm:justify-start items-center gap-1 flex-wrap">
+            {Iproducts.map((product) => (
+              <ProductItem key={product._id} product={product} />
             ))}
           </div>
         </div>
       </section>
 
-      {/* Discounted Products Carousel */}
-      <section className="bg-gray-50 py-12">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Special Offers</h2>
-              <p className="text-gray-500">Limited time discounts on these amazing products</p>
-            </div>
-            <Button variant="ghost" asChild className="gap-1">
-              <Link href="/products?discount=true">
-                View All <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-          <div className="mt-6">
-            <Carousel className="w-full">
-              <CarouselContent>
-                {discountedProducts.map((product) => (
-                  <CarouselItem key={product.id} className="md:basis-1/2 lg:basis-1/3">
-                    <div className="p-1">
-                      <ProductCard product={product} />
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="left-2" />
-              <CarouselNext className="right-2" />
-            </Carousel>
-          </div>
-        </div>
-      </section>
-
-      {/* Latest Products */}
-      <section className="py-12">
+      {/*  Products Carousel */}
+      <section className="hidden sm:block py-12">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
             <div>
@@ -146,9 +117,63 @@ export default function Home() {
               </Link>
             </Button>
           </div>
-          <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {latestProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+          <div className="mt-6  w-full ">
+            <ProductCarousel products={Iproducts} />
+          </div>
+        </div>
+      </section>
+
+        {/* Second Products */}
+        <section className="py-10">
+        <div className="container w-full px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between gap-4 items-center">
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Top Selling</h2>
+              <p className="text-gray-500">Just landed in our store</p>
+            </div>
+            <Button variant="ghost" asChild className="gap-1">
+              <Link href="/products?sort=newest">
+                View All <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+          <div className="mt-5 flex justify-start items-center gap-1 flex-wrap">
+            {Iproducts.map((product) => (
+              <ProductItem key={product._id} product={product} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+            {/*  Category Grid  */}
+      <section className="w-full h-auto p-1 px-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-1">
+        {HomeCategories.map((category, index) => (
+          <CategoryGrid
+            key={index}
+            title={category.title}
+            items={category.items}
+            linkText={category.linkText}
+          />
+        ))}
+      </section>
+
+        {/* Third Products */}
+        <section className="py-10">
+        <div className="container w-full px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between gap-4 items-center">
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Latest Arrivals</h2>
+              <p className="text-gray-500">Just landed in our store</p>
+            </div>
+            <Button variant="ghost" asChild className="gap-1">
+              <Link href="/products?sort=newest">
+                View All <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+          <div className="mt-5 flex justify-start items-center gap-1 flex-wrap">
+            {Iproducts.map((product) => (
+              <ProductItem key={product._id} product={product} />
             ))}
           </div>
         </div>
@@ -175,7 +200,7 @@ export default function Home() {
   )
 }
 
-function ProductCard({ product }) {
+function ProductCard({product} : any) {
   return (
     <Card className="overflow-hidden transition-all hover:shadow-md">
       <div className="relative aspect-square overflow-hidden">

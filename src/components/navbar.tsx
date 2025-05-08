@@ -9,6 +9,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import SearchDialog from "@/components/search-dialog"
 import { categories } from "@/lib/data"
 import { useCartStore, useSearchStore, useUserStore, useWishlistStore } from "@/lib/store"
+import AccountSheet from "./account-sheet"
 
 export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
@@ -173,12 +174,14 @@ export default function Navbar() {
                 <span className="sr-only">Cart</span>
               </Button>
             </Link>
-            <Link href="/account">
-              <Button variant="ghost" size="icon" className="hidden sm:flex">
-                <User className="h-5 w-5" />
-                <span className="sr-only">Account</span>
-              </Button>
-            </Link>
+            <AccountSheet
+              trigger={
+                <Button variant="ghost" size="icon">
+                  <User className="h-5 w-5" />
+                  <span className="sr-only">Account</span>
+                </Button>
+              }
+            />
           </div>
         </div>
       </div>

@@ -212,3 +212,329 @@ export const products = [
     colors: ["#000000", "#3B82F6", "#EF4444"],
   },
 ]
+
+export const Iproducts = [
+  {
+    _id: "677b0c4e26a3c8324bccb17f",
+    name: "Product: Apple Watch Ultra (2022)",
+    description:
+      "The Apple Watch Ultra Titanium is made from aerospace-grade titanium, making it the most durable Apple Watch ever. It's also water-resistant to 100 meters and dust-resistant, so you can take it with you wherever you go.",
+    price: [
+      {
+        size: "49 mm",
+        sellPrice: 87900,
+        mrp: 95000,
+        _id: "677b0c4e26a3c8324bccb180",
+      },
+    ],
+    image: [
+      "https://res.cloudinary.com/dqbewkf2e/image/upload/v1736117326/dwlito7uksglpg1lidce.jpg",
+    ],
+    colors: [
+      {
+        name: "Orange",
+        code: "#ffa047",
+        _id: "677b0c4e26a3c8324bccb181",
+      },
+    ],
+    size: ["49 mm"],
+    category: "Electronics",
+    subCategory: "Smart Watch",
+    brand: "Apple",
+    material: "ABS Plastic + Aluminum",
+    GWS:
+      "01 year International Limited Warranty (Terms & Condition Apply As Per Apple).",
+    stock: 10,
+    store: "677a6a319f88f842c4fef6d4",
+    uploader: "677a65fda142e060ef919b39",
+    reviews: [],
+    sold: 0,
+    avgRatting: 5,
+    addtocart: [],
+    wishlisted: [],
+    orders: [],
+    createdAt: "2025-01-05T22:48:46.875Z",
+    updatedAt: "2025-01-05T22:48:46.875Z",
+    __v: 0,
+    status: "active",
+  },
+  {
+    _id: "677b0d8026a3c8324bccb1b0",
+    name: "Galaxy Watch 5",
+    description:
+      "The Samsung Galaxy Watch 5 is the latest smartwatch from Samsung, and it's packed with features to help you stay connected, healthy, and active. With its sleek design, long battery life, and advanced health tracking capabilities",
+    price: [
+      {
+        size: "44mm",
+        sellPrice: 19990,
+        mrp: 20000,
+        _id: "677b0d8026a3c8324bccb1b1",
+      },
+    ],
+    image: [
+      "https://res.cloudinary.com/dqbewkf2e/image/upload/v1736117631/xm5yvjrgtvsfvapuizkx.jpg",
+    ],
+    colors: [
+      {
+        name: "Graphite",
+        code: "#a29a9a",
+        _id: "677b0d8026a3c8324bccb1b2",
+      },
+    ],
+    size: ["44mm"],
+    category: "Electronics",
+    subCategory: "Smart Watch",
+    brand: "Sumsung",
+    material: "ABS Plastic + Aluminum",
+    GWS:
+      "01 year International Limited Warranty (Terms & Condition Apply As Per Apple).",
+    stock: 20,
+    store: "677a6a319f88f842c4fef6d4",
+    uploader: "677a65fda142e060ef919b39",
+    reviews: [],
+    sold: 0,
+    avgRatting: 5,
+    addtocart: [],
+    wishlisted: [],
+    orders: [],
+    createdAt: "2025-01-05T22:53:52.435Z",
+    updatedAt: "2025-01-05T22:53:52.435Z",
+    __v: 0,
+    status: "active",
+  },
+  {
+    _id: "677b0e8d26a3c8324bccb1e3",
+    name: "boAt Wave Stride Voice Premium Bluetooth Calling Smartwatch",
+    description:
+      "Wave Stride Voice Premium Bluetooth Calling Smartwatch is a great choice for Bangladeshis looking for a smartwatch with high-quality features at a reasonable price. It has a large, vibrant display, a long-lasting battery",
+    price: [
+      {
+        size: '1.83" square',
+        sellPrice: 3999,
+        mrp: 4200,
+        _id: "677b0e8d26a3c8324bccb1e4",
+      },
+    ],
+    image: [
+      "https://res.cloudinary.com/dqbewkf2e/image/upload/v1736117900/ecimp6gevystvpwpqabd.jpg",
+    ],
+    colors: [
+      {
+        name: "Black",
+        code: "#171616",
+        _id: "677b0e8d26a3c8324bccb1e5",
+      },
+    ],
+    size: ['1.83" square'],
+    category: "Electronics",
+    subCategory: "Smart Watch",
+    brand: "boAt",
+    material: "ABS Plastic + Aluminum",
+    GWS: "01 Year Warranty",
+    stock: 10,
+    store: "677a6a319f88f842c4fef6d4",
+    uploader: "677a65fda142e060ef919b39",
+    reviews: [],
+    sold: 0,
+    avgRatting: 3,
+    addtocart: [],
+    wishlisted: [],
+    orders: [],
+    createdAt: "2025-01-05T22:58:21.239Z",
+    updatedAt: "2025-01-05T22:58:21.239Z",
+    __v: 0,
+    status: "active",
+  },
+  {
+    _id: "677b0f3b26a3c8324bccb218",
+    name: "Kieslect Calling Watch Ks",
+    description:
+      "The Kieslect Calling Watch Ks is a smartwatch that is perfect for those who are looking for a stylish and functional device. It features a built-in SIM card slot so you can make and receive calls and texts without having to carry your phone with you",
+    price: [
+      {
+        size: "1.78-inch",
+        sellPrice: 5499,
+        mrp: 5600,
+        _id: "677b0f3b26a3c8324bccb219",
+      },
+    ],
+    image: [
+      "https://res.cloudinary.com/dqbewkf2e/image/upload/v1736118074/vnmpg3rqxsm22nw03jiw.jpg",
+    ],
+    colors: [
+      {
+        name: "Orange Gray",
+        code: "#fb7e09",
+        _id: "677b0f3b26a3c8324bccb21a",
+      },
+    ],
+    size: ["1.78-inch"],
+    category: "Electronics",
+    subCategory: "Smart Watch",
+    brand: "Kieslect",
+    material: "ABS Plastic + Aluminum",
+    GWS: "01 Year Warranty",
+    stock: 10,
+    store: "677a6a319f88f842c4fef6d4",
+    uploader: "677a65fda142e060ef919b39",
+    reviews: [],
+    sold: 0,
+    avgRatting: 4,
+    addtocart: [],
+    wishlisted: [],
+    orders: [],
+    createdAt: "2025-01-05T23:01:15.223Z",
+    updatedAt: "2025-01-05T23:01:15.223Z",
+    __v: 0,
+    status: "active",
+  },
+  {
+    _id: "6797229f16adcb8100b44e21",
+    name: "HP Elitebook G10",
+    description: "helooooo",
+    price: [
+      {
+        size: "64GB",
+        sellPrice: 20999,
+        mrp: 22000,
+        _id: "6797229f16adcb8100b44e22",
+      },
+    ],
+    image: [
+      "https://res.cloudinary.com/dqbewkf2e/image/upload/v1737958047/ogq6wsim2t7nb1nrh3fv.jpg",
+    ],
+    colors: [
+      {
+        name: "Red",
+        code: "#f90b0b",
+        _id: "6797229f16adcb8100b44e23",
+      },
+    ],
+    size: ["64GB"],
+    category: "Electronics",
+    subCategory: "Laptop",
+    brand: "HP",
+    material: "ABS Plastic + Aluminum",
+    GWS: "Lifetime service warranty",
+    stock: 20,
+    store: "675487aea9bbe3ee08de8f0b",
+    uploader: "675486d2a9bbe3ee08de8ef4",
+    reviews: [],
+    sold: 0,
+    avgRatting: 4,
+    addtocart: [],
+    wishlisted: [],
+    orders: [],
+    createdAt: "2025-01-27T06:07:27.328Z",
+    updatedAt: "2025-01-27T06:16:01.394Z",
+    __v: 0,
+    status: "active",
+  },
+];
+
+export const HomeCategories = [
+  {
+    title: "Gaming accessories",
+    items: [
+      {
+        label: "Headsets",
+        imgSrc:
+          "https://assets2.razerzone.com/images/pnx.assets/eacc83c0643ed2da8c9e98968f8aa215/headset-landingpg-500x500-barracuda-x-chroma.webp",
+      },
+      {
+        label: "Keyboards",
+        imgSrc:
+          "https://m.media-amazon.com/images/I/71duf0rTDqL._AC_UY327_FMwebp_QL65_.jpg",
+      },
+      {
+        label: "Mouse",
+        imgSrc:
+          "https://m.media-amazon.com/images/I/61CUnKVaZEL._AC_UY327_FMwebp_QL65_.jpg",
+      },
+      {
+        label: "Chairs",
+        imgSrc:
+          "https://m.media-amazon.com/images/I/81xYMvb9ocL._AC_UL480_FMwebp_QL65_.jpg",
+      },
+    ],
+    linkText: "See more",
+  },
+  {
+    title: "Fashions",
+    items: [
+      {
+        label: "Punjabi",
+        imgSrc:
+          "https://www.smarteshopbd.com/wp-content/uploads/2024/03/AVAILABLE-Indian-Cotton-Sequence-Collection2.webp",
+      },
+      {
+        label: "T-shirts",
+        imgSrc:
+          "https://s.alicdn.com/@sc04/kf/H6bffa97c05e14252a1e323fc16b41fadx.jpg_720x720q50.jpg",
+      },
+      {
+        label: "Jeans",
+        imgSrc:
+          "https://5.imimg.com/data5/ANDROID/Default/2021/8/ZQ/ZN/BR/60673728/product-jpeg-500x500.jpg",
+      },
+      {
+        label: "Shoes",
+        imgSrc:
+          "https://cdn.selloship.com/images/gallery_sm/53e7e8cd7dca4a8771bf8c54075e059f.jpeg",
+      },
+    ],
+    linkText: "See more",
+  },
+  {
+    title: "Electronics",
+    items: [
+      {
+        label: "Phones",
+        imgSrc:
+          "https://m.media-amazon.com/images/I/71n1Bn04lJL._AC_UY327_FMwebp_QL65_.jpg",
+      },
+      {
+        label: "Laptops",
+        imgSrc:
+          "https://m.media-amazon.com/images/I/61j3uzJvVLL._AC_UY327_FMwebp_QL65_.jpg",
+      },
+      {
+        label: "Monitors",
+        imgSrc:
+          "https://m.media-amazon.com/images/I/71oilmGrVuL._AC_UY327_FMwebp_QL65_.jpg",
+      },
+      {
+        label: "Smart Watches",
+        imgSrc:
+          "https://m.media-amazon.com/images/I/613Kh39QSiL._AC_UY327_FMwebp_QL65_.jpg",
+      },
+    ],
+    linkText: "See more",
+  },
+  {
+    title: "Home essentials",
+    items: [
+      {
+        label: "Headsets",
+        imgSrc:
+          "https://images-na.ssl-images-amazon.com/images/G/01/AMAZON_FASHION/2022/SITE_FLIPS/SPR_22/GW/DQC/DQC_APR_TBYB_W_SHOES_1x._SY116_CB624172947_.jpg",
+      },
+      {
+        label: "Keyboards",
+        imgSrc:
+          "https://images-na.ssl-images-amazon.com/images/G/01/AMAZON_FASHION/2022/SITE_FLIPS/SPR_22/GW/DQC/DQC_APR_TBYB_W_TOPS_1x._SY116_CB623353881_.jpg",
+      },
+      {
+        label: "Computer mice",
+        imgSrc:
+          "https://images-na.ssl-images-amazon.com/images/G/01/AMAZON_FASHION/2022/SITE_FLIPS/SPR_22/GW/DQC/DQC_APR_TBYB_W_TOPS_1x._SY116_CB623353881_.jpg",
+      },
+      {
+        label: "Chairs",
+        imgSrc:
+          "https://images-na.ssl-images-amazon.com/images/G/01/AMAZON_FASHION/2022/SITE_FLIPS/SPR_22/GW/DQC/DQC_APR_TBYB_W_BOTTOMS_1x._SY116_CB624172947_.jpg",
+      },
+    ],
+    linkText: "See more",
+  },
+];
