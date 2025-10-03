@@ -1,64 +1,107 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { ChevronRight, Heart, Minus, Plus, Share2, ShoppingCart, Star, Truck } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { useState } from "react";
+import Link from "next/link";
+import {
+  ChevronRight,
+  Heart,
+  Minus,
+  Plus,
+  Share2,
+  ShoppingCart,
+  Star,
+  Truck,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useToast } from "@/hooks/use-toast"
-import { products } from "@/lib/data"
-import { useCartStore } from "@/lib/store"
-import ProductReviews from "@/components/product-reviews"
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
+import { products } from "@/lib/data";
+import { useCartStore } from "@/lib/store";
+import ProductReviews from "@/components/product-reviews";
+import { useQuery } from "@tanstack/react-query";
+import { getProductDetails } from "@/actions/main.action";
 
-export default function ProductPage({ params }) {
-  const router = useRouter()
-  const { toast } = useToast()
-  const { addItem } = useCartStore()
-  const product = products.find((p) => p.id === params.id) || products[0]
-  const [quantity, setQuantity] = useState(1)
-  const [selectedImage, setSelectedImage] = useState(0)
-  const [selectedColor, setSelectedColor] = useState(product.colors?.[0] || null)
-  const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] || null)
+export default function ProductPage({ params }: { params: { id: string } }) {
+  const router = useRouter();
+  const { toast } = useToast();
+  const { addItem } = useCartStore();
+  const [quantity, setQuantity] = useState(1);
+
+  const { data: product, isLoading } = useQuery<Record<string, any> | null>({
+    queryKey: ["productDetails", params.id],
+    queryFn: async () => {
+      try {
+        const res = await getProductDetails(params.id || "");
+        if (!res.success) {
+          toast({
+            title: "Error fetching settings",
+            description: res.error || "Something went wrong.",
+            variant: "destructive",
+          });
+          return null;
+        }
+        return res.data;
+      } catch (error) {
+        console.error("Error fetching user stats:", error);
+        return null;
+      }
+    },
+  });
+
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [selectedColor, setSelectedColor] = useState(
+    product?.colors?.[0] || null
+  );
+  const [selectedSize, setSelectedSize] = useState(product?.sizes?.[0] || null);
 
   // Related products (same category)
-  const relatedProducts = products.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4)
+  const relatedProducts = products
+    .filter((p) => p.category === product?.category && p.id !== product?._id)
+    .slice(0, 4);
 
   const handleAddToCart = () => {
     addItem({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.images[0],
+      id: product?._id,
+      name: product?.name,
+      price: product?.price,
+      image: product?.images[0],
       quantity,
       color: selectedColor,
       size: selectedSize,
-      discountPercentage: product.discountPercentage,
-    })
+      discountPercentage: product?.discountPercentage,
+    });
 
     toast({
       title: "Added to cart",
-      description: `${quantity} × ${product.name} has been added to your cart.`,
-    })
-  }
+      description: `${quantity} × ${product?.name} has been added to your cart.`,
+    });
+  };
 
   const handleBuyNow = () => {
     addItem({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.images[0],
+      id: product?._id,
+      name: product?.name,
+      price: product?.price,
+      image: product?.images[0],
       quantity,
       color: selectedColor,
       size: selectedSize,
-      discountPercentage: product.discountPercentage,
-    })
+      discountPercentage: product?.discountPercentage,
+    });
 
-    router.push("/checkout")
+    router.push("/checkout");
+  };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        <p className="text-center">Loading...</p>
+      </div>
+    );
   }
-
   return (
     <main className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
       {/* Breadcrumbs */}
@@ -71,11 +114,14 @@ export default function ProductPage({ params }) {
           Products
         </Link>
         <ChevronRight className="h-4 w-4" />
-        <Link href={`/categories/${product.category.toLowerCase()}`} className="hover:text-foreground">
-          {product.category}
+        <Link
+          href={`/categories/${product?.category.toLowerCase()}`}
+          className="hover:text-foreground"
+        >
+          {product?.category}
         </Link>
         <ChevronRight className="h-4 w-4" />
-        <span className="truncate text-foreground">{product.name}</span>
+        <span className="truncate text-foreground">{product?.name}</span>
       </nav>
 
       {/* Product Details */}
@@ -84,21 +130,23 @@ export default function ProductPage({ params }) {
         <div className="space-y-4">
           <div className="overflow-hidden rounded-lg border">
             <img
-              src={product.images[selectedImage] || "/placeholder.svg"}
-              alt={product.name}
+              src={product?.images[selectedImage] || "/placeholder.svg"}
+              alt={product?.name}
               className="h-full w-full object-cover"
             />
           </div>
           <div className="grid grid-cols-4 gap-2">
-            {product.images.map((image, index) => (
+            {product?.images.map((image:string, index:number) => (
               <button
                 key={index}
-                className={`overflow-hidden rounded-md border ${selectedImage === index ? "ring-2 ring-primary" : ""}`}
+                className={`overflow-hidden rounded-md border ${
+                  selectedImage === index ? "ring-2 ring-primary" : ""
+                }`}
                 onClick={() => setSelectedImage(index)}
               >
                 <img
                   src={image || "/placeholder.svg"}
-                  alt={`${product.name} - Image ${index + 1}`}
+                  alt={`${product?.name} - Image ${index + 1}`}
                   className="h-full w-full object-cover"
                 />
               </button>
@@ -109,75 +157,48 @@ export default function ProductPage({ params }) {
         {/* Product Info */}
         <div className="space-y-6">
           <div>
-            <h1 className="text-3xl font-bold">{product.name}</h1>
+            <h1 className="text-3xl font-bold">{product?.name}</h1>
             <div className="mt-2 flex items-center gap-2">
               <div className="flex items-center">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star
                     key={i}
                     className={`h-5 w-5 ${
-                      i < Math.floor(product.rating) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+                      i < Math.floor(product?.rating)
+                        ? "fill-yellow-400 text-yellow-400"
+                        : "text-gray-300"
                     }`}
                   />
                 ))}
               </div>
               <span className="text-sm text-muted-foreground">
-                {product.rating} ({product.reviewCount} reviews)
+                {product?.rating} ({product?.reviewCount} reviews)
               </span>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
-            {product.discountPercentage > 0 ? (
-              <>
-                <span className="text-3xl font-bold">
-                  ${(product.price * (1 - product.discountPercentage / 100)).toFixed(2)}
-                </span>
-                <span className="text-xl text-muted-foreground line-through">${product.price.toFixed(2)}</span>
-                <span className="rounded-full bg-red-100 px-2 py-1 text-sm font-medium text-red-800">
-                  {product.discountPercentage}% OFF
-                </span>
-              </>
-            ) : (
-              <span className="text-3xl font-bold">${product.price.toFixed(2)}</span>
-            )}
+           
           </div>
 
           <div className="space-y-2">
             <h3 className="font-medium">Description</h3>
-            <p className="text-muted-foreground">{product.description}</p>
+            <p className="text-muted-foreground">{product?.description}</p>
           </div>
 
-          {product.colors && (
-            <div className="space-y-2">
-              <h3 className="font-medium">Colors</h3>
-              <div className="flex gap-2">
-                {product.colors.map((color) => (
-                  <button
-                    key={color}
-                    className={`h-8 w-8 rounded-full border p-0.5 ${
-                      selectedColor === color ? "ring-2 ring-primary ring-offset-2" : ""
-                    }`}
-                    style={{ backgroundColor: color }}
-                    aria-label={`Select ${color} color`}
-                    onClick={() => setSelectedColor(color)}
-                  >
-                    <span className="sr-only">{color}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+         
 
-          {product.sizes && (
+          {product?.sizes && (
             <div className="space-y-2">
               <h3 className="font-medium">Sizes</h3>
               <div className="flex flex-wrap gap-2">
-                {product.sizes.map((size) => (
+                {product?.sizes.map((size: string) => (
                   <button
                     key={size}
                     className={`rounded-md border px-3 py-1 text-sm hover:bg-muted ${
-                      selectedSize === size ? "bg-primary text-primary-foreground" : ""
+                      selectedSize === size
+                        ? "bg-primary text-primary-foreground"
+                        : ""
                     }`}
                     onClick={() => setSelectedSize(size)}
                   >
@@ -201,7 +222,11 @@ export default function ProductPage({ params }) {
                 <span className="sr-only">Decrease quantity</span>
               </Button>
               <span className="w-8 text-center">{quantity}</span>
-              <Button variant="outline" size="icon" onClick={() => setQuantity(quantity + 1)}>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setQuantity(quantity + 1)}
+              >
                 <Plus className="h-4 w-4" />
                 <span className="sr-only">Increase quantity</span>
               </Button>
@@ -213,7 +238,11 @@ export default function ProductPage({ params }) {
               <ShoppingCart className="h-5 w-5" />
               Add to Cart
             </Button>
-            <Button variant="secondary" className="flex-1" onClick={handleBuyNow}>
+            <Button
+              variant="secondary"
+              className="flex-1"
+              onClick={handleBuyNow}
+            >
               Buy Now
             </Button>
             <Button variant="outline" size="icon">
@@ -241,15 +270,18 @@ export default function ProductPage({ params }) {
           <TabsList className="w-full justify-start overflow-x-auto">
             <TabsTrigger value="details">Details</TabsTrigger>
             <TabsTrigger value="specifications">Specifications</TabsTrigger>
-            <TabsTrigger value="reviews">Reviews ({product.reviewCount})</TabsTrigger>
+            <TabsTrigger value="reviews">
+              Reviews ({product?.reviewCount})
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="details" className="mt-4 space-y-4">
             <h3 className="text-lg font-medium">Product Details</h3>
-            <p className="text-muted-foreground">{product.description}</p>
+            <p className="text-muted-foreground">{product?.description}</p>
             <p className="text-muted-foreground">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et
-              dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex
-              ea commodo consequat.
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
+              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+              enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              nisi ut aliquip ex ea commodo consequat.
             </p>
             <ul className="ml-6 list-disc text-muted-foreground">
               <li>High-quality materials</li>
@@ -266,19 +298,21 @@ export default function ProductPage({ params }) {
                   <dl className="mt-2 grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
                     <div>
                       <dt className="text-sm text-muted-foreground">Brand</dt>
-                      <dd>{product.brand || "ShopNow"}</dd>
+                      <dd>{product?.brand || "ShopNow"}</dd>
                     </div>
                     <div>
                       <dt className="text-sm text-muted-foreground">Model</dt>
-                      <dd>{product.model || "Standard"}</dd>
+                      <dd>{product?.model || "Standard"}</dd>
                     </div>
                     <div>
-                      <dt className="text-sm text-muted-foreground">Material</dt>
-                      <dd>{product.material || "Mixed"}</dd>
+                      <dt className="text-sm text-muted-foreground">
+                        Material
+                      </dt>
+                      <dd>{product?.material || "Mixed"}</dd>
                     </div>
                     <div>
                       <dt className="text-sm text-muted-foreground">Weight</dt>
-                      <dd>{product.weight || "0.5 kg"}</dd>
+                      <dd>{product?.weight || "0.5 kg"}</dd>
                     </div>
                   </dl>
                 </div>
@@ -286,15 +320,21 @@ export default function ProductPage({ params }) {
                   <h3 className="font-medium">Shipping Information</h3>
                   <dl className="mt-2 grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
                     <div>
-                      <dt className="text-sm text-muted-foreground">Dimensions</dt>
-                      <dd>{product.dimensions || "30 x 20 x 10 cm"}</dd>
+                      <dt className="text-sm text-muted-foreground">
+                        Dimensions
+                      </dt>
+                      <dd>{product?.dimensions || "30 x 20 x 10 cm"}</dd>
                     </div>
                     <div>
-                      <dt className="text-sm text-muted-foreground">Package Weight</dt>
-                      <dd>{product.packageWeight || "0.8 kg"}</dd>
+                      <dt className="text-sm text-muted-foreground">
+                        Package Weight
+                      </dt>
+                      <dd>{product?.packageWeight || "0.8 kg"}</dd>
                     </div>
                     <div>
-                      <dt className="text-sm text-muted-foreground">Shipping</dt>
+                      <dt className="text-sm text-muted-foreground">
+                        Shipping
+                      </dt>
                       <dd>Worldwide</dd>
                     </div>
                     <div>
@@ -308,10 +348,10 @@ export default function ProductPage({ params }) {
           </TabsContent>
           <TabsContent value="reviews" className="mt-4">
             <ProductReviews
-              productId={product.id}
-              productName={product.name}
-              rating={product.rating}
-              reviewCount={product.reviewCount}
+              productId={product?._id}
+              productName={product?.name}
+              rating={product?.rating}
+              reviewCount={product?.reviewCount}
             />
           </TabsContent>
         </Tabs>
@@ -322,27 +362,32 @@ export default function ProductPage({ params }) {
         <h2 className="text-2xl font-bold">Related Products</h2>
         <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {relatedProducts.map((product) => (
-            <Card key={product.id} className="overflow-hidden">
-              <Link href={`/products/${product.id}`} className="block">
+            <Card key={product?.id} className="overflow-hidden">
+              <Link href={`/products/${product?.id}`} className="block">
                 <div className="aspect-square overflow-hidden">
                   <img
-                    src={product.images[0] || "/placeholder.svg"}
-                    alt={product.name}
+                    src={product?.images[0] || "/placeholder.svg"}
+                    alt={product?.name}
                     className="h-full w-full object-cover transition-transform hover:scale-105"
                   />
                 </div>
               </Link>
               <CardContent className="p-4">
                 <h3 className="font-medium">
-                  <Link href={`/products/${product.id}`} className="hover:underline">
-                    {product.name}
+                  <Link
+                    href={`/products/${product?.id}`}
+                    className="hover:underline"
+                  >
+                    {product?.name}
                   </Link>
                 </h3>
                 <div className="mt-2 flex items-center justify-between">
-                  <span className="font-bold">${product.price.toFixed(2)}</span>
+                  <span className="font-bold">
+                    ${product?.price.toFixed(2)}
+                  </span>
                   <div className="flex items-center">
                     <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="ml-1 text-sm">{product.rating}</span>
+                    <span className="ml-1 text-sm">{product?.rating}</span>
                   </div>
                 </div>
               </CardContent>
@@ -351,5 +396,5 @@ export default function ProductPage({ params }) {
         </div>
       </section>
     </main>
-  )
+  );
 }

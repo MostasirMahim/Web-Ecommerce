@@ -1,12 +1,65 @@
+"use server";
 import { getAuthStatus } from "@/lib/authMiddleware";
+import cloudinary from "@/lib/cloudinary";
+import mongodbConnect from "@/lib/connect_Database";
 import Order from "@/models/order.model";
 import Product from "@/models/product.model";
 import Store from "@/models/store.model";
 import User from "@/models/user.model";
-import { v2 as cloudinary } from "cloudinary";
 
-export const createProduct = async (productData:any) => {
+
+
+export async function StoreDetails() {
   try {
+    await mongodbConnect();
+    const { isAuthenticated, user: userdata } = await getAuthStatus();
+    if (!isAuthenticated) {
+      return {
+        success: false,
+        error: "User not authenticated",
+      };
+    }
+    const user = await User.findById(userdata?._id);
+    if (!user) {
+      return {
+        success: false,
+        error: "User not found",
+      };
+    }
+
+    if(user.role !== "admin"){
+      return {
+        success: false,
+        error: "Access Denied",
+      };
+    }
+
+    const store = await Store.findOne();
+    if(!store){
+      const store = new Store({ owner: user._id })
+      await store.save();
+      user.store = store._id as any;
+      await user.save();
+      return {
+        success: true,
+        data : store.toObject(),
+      };
+    }
+  
+    return {
+      success: true,
+      data: store.toObject(),
+    };
+    
+  } catch (error) {
+    throw error;
+  }
+  
+}
+
+export const addProduct = async (productData:any) => {
+  try {
+    await mongodbConnect();
     const { isAuthenticated, user: userdata } = await getAuthStatus();
     if (!isAuthenticated) {
       return {
@@ -36,25 +89,25 @@ export const createProduct = async (productData:any) => {
       return { success: false, error: "Access Denied" };
     }
 
-   const uploadImage = async (product : any) => {
-      if (product?.image && product.image.length > 0) {
+   const uploadImages = async (product : any) => {
+      if (product?.images && product.images.length > 0) {
         const uploadImage = await Promise.all(
-          product.image.map(async (image : any) => {
+          product.images.map(async (image : any) => {
             const upload = await cloudinary.uploader.upload(image);
             return upload.secure_url;
           })
         );
-        product.image = uploadImage;
+        product.images = uploadImage;
       }
     }
-    const avgRatting = Math.floor(Math.random() * 5) + 1;
+    const avgRatting = Math.floor(Math.random() * 3) + 3;
 
-    await uploadImage(product);
+     await uploadImages(product);
     const newProduct = new Product({
       name: product.name,
       description: product.description,
       price: product.price || [],
-      image: product.image || [],
+      images: product.images || [],
       colors: product.colors || [],
       size: product.size || [],
       category: product.category,
@@ -188,7 +241,7 @@ export const getAdminOrders = async (orderId: string) => {
   }
 };
 
-export const getAdminStore = async () => {
+export const getStoreProducts = async () => {
   try {
     const { isAuthenticated, user: userdata } = await getAuthStatus();
     if (!isAuthenticated) {
@@ -204,37 +257,18 @@ export const getAdminStore = async () => {
         error: "User not found",
       };
     }
-    if(user.role !== "admin" && !user.store){
+    if(user.role !== "admin"){
       return {
         success: false,
         error: "Access Denied",
       };
     }
 
-    const store = await Store.findById(user.store)
-      .select("orders completedOrders cancelledOrders pendingOrders _id")
-      .populate([
-        {
-          path: "orders",
-          populate: [
-            { path: "customer", select: "name number altNumber email _id" },
-            {
-              path: "products",
-              populate: { path: "item", select: "name image _id" },
-            },
-          ],
-        },
-      ])
-      .lean();
-    if (!store) {
-      return {
-        success: false,
-        error: "Store not found",
-      };
-    }
+const products = await Product.find().sort({ createdAt: -1 }).lean();
+
     return {
       success: true,
-      data: store,
+      data: products,
     };
   } catch (error) {
     console.log(error);
@@ -245,8 +279,48 @@ export const getAdminStore = async () => {
   }
 };
 
+export async function getCustomers () {
+  try {
+     await mongodbConnect();
+    const { isAuthenticated, user: userdata } = await getAuthStatus();
+    if (!isAuthenticated) {
+      return {
+        success: false,
+        error: "User not authenticated",
+      };
+    }
+    const user = await User.findById(userdata?._id);
+    if (!user) {
+      return {
+        success: false,
+        error: "User not found",
+      };
+    }
+
+    if(user.role !== "admin"){
+      return {
+        success: false,
+        error: "Access Denied",
+      };
+    }
+
+    const customers = await User.find({ role: "user" }).sort({ createdAt: -1 }).lean();
+    return {
+      success: true,
+      data: customers,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      success: false,
+      error: "Internal Server Error",
+    };
+  }
+}
 export const getProductById = async (productId: string) => {
   try {
+    await mongodbConnect();
+    
    if(!productId){
     return {
       success: false,
@@ -313,10 +387,7 @@ export const getProductReviews = async (productID: string) => {
   }
 };
 
-
-
 export const adminDashboardInfo = async () => {
-  
   try {
     const { isAuthenticated, user: userdata } = await getAuthStatus();
     if (!isAuthenticated) {

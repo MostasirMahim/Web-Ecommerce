@@ -19,7 +19,7 @@ interface IPrice {
     name: string;
     description: string;
     price: IPrice[];
-    image: string[];
+    images: string[];
     colors: IColor[];
     size: string[];
     category: string;

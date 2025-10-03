@@ -4,6 +4,7 @@ import "./globals.css"
 
 import { Toaster } from "@/components/ui/toaster"
 import ClientLayout from "./clientLayout"
+import Providers from "./providers";
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -18,10 +19,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={inter.className}>
+        <Providers>
         <div className="flex min-h-screen flex-col">
           <ClientLayout>{children}</ClientLayout>
           <Toaster />
         </div>
+        </Providers>
+        
       </body>
     </html>
   )

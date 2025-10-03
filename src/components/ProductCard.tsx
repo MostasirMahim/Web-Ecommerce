@@ -76,10 +76,10 @@ function ProductItem({ product, from = null } : ProductProps) {
         from === "carousel" ? "w-[150px]" : "w-[150px]"
       }  md:w-[220px] hover:shadow-md hover:-translate-y-1 hover:duration-300 hover:shadow-sky-400 hover:border-sky-400 cursor-pointer m-2 relative border-[1px] border-gray-300 rounded-xl `}
     >
-      <div className="relative w-full h-[100px] sm:h-[200px] rounded-t-xl">
+      <div onClick={() => navigate.push(`/products/${product?._id}`)} className="relative w-full h-[100px] sm:h-[200px] rounded-t-xl">
         <div className="absolute top-0 rounded-t-xl w-full h-[100px] md:h-[200px] flex justify-center items-center ">
           <img
-            src={product?.image[0]}
+            src={(product?.images?.[0] )|| "/placeholder.jpg"}
             onClick={() => navigate.push(`/product/${product?._id}`)}
             alt=""
             className="h-[100px] sm:h-[200px] w-full max-h-[200px] md:max-h-[200px]  object-contain rounded-t-xl absolute top-0 pb-1"
@@ -116,13 +116,13 @@ function ProductItem({ product, from = null } : ProductProps) {
       <div className="px-3 w-full py-[2px]  md:h-[90px] flex justify-start items-center overflow-hidden">
         <div className="flex flex-col justify-start ">
           <p
-            onClick={() => navigate.push(`/product/${product?._id}`)}
+            onClick={() => navigate.push(`/products/${product?._id}`)}
             className="line-clamp-2 break-words max-h-[55px] md:max-h-[45px]  text-[12px] md:text-[14px] font-quicksand font-bold text-left w-full  hover:translate-x-1 hover:duration-300"
           >
             {product?.name || "..........."}
           </p>
           <div
-            onClick={() => navigate.push(`/product/${product?._id}`)}
+            onClick={() => navigate.push(`/products/${product?._id}`)}
             className="hidden sm:flex gap-2 hover:translate-x-1 hover:duration-300"
           >
             <Star stars={product?.avgRatting || 4} size={"sm"} />
@@ -142,7 +142,7 @@ function ProductItem({ product, from = null } : ProductProps) {
       </div>
       <div className="px-3 mx-auto w-full flex flex-col md:flex-row justify-center md:justify-between items-center ">
         <div
-          onClick={() => navigate.push(`/product/${product?._id}`)}
+          onClick={() => navigate.push(`/products/${product?._id}`)}
           className="flex justify-start items-center space-x-1 px-1 hover:scale-110 hover:duration-300"
         >
           <p className="text-sm py-1 sm:text-xl font-quicksand font-bold ">

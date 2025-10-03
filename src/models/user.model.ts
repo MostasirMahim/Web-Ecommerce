@@ -14,14 +14,14 @@ export interface IUser extends Document {
   altNumber: string;
   email: string;
   password: string;
-  role: "user" | "admin" | "guest";
+  role: "user" | "admin";
   cart: CartItem[];
   wishlist: mongoose.Types.ObjectId[];
   address: string[];
   buylist: mongoose.Types.ObjectId[];
   orders: mongoose.Types.ObjectId[];
   reviews: mongoose.Types.ObjectId[];
-  store: mongoose.Types.ObjectId;
+  store?: mongoose.Types.ObjectId;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -35,8 +35,8 @@ const userSchema = new Schema<IUser>(
     password: { type: String, required: true },
     role: {
       type: String,
-      enum: ["guest", "user", "admin"],
-      default: "guest",
+      enum: [ "user", "admin"],
+      default: "user",
     },
     cart: [
       {
@@ -52,7 +52,7 @@ const userSchema = new Schema<IUser>(
     buylist: [{ type: Schema.Types.ObjectId, ref: "Product", default: [] }],
     orders: [{ type: Schema.Types.ObjectId, ref: "Order", default: [] }],
     reviews: [{ type: Schema.Types.ObjectId, ref: "Review", default: [] }],
-    store: { type: Schema.Types.ObjectId, ref: "Store", default: ""},
+    store: { type: Schema.Types.ObjectId, ref: "Store", required: false, default: undefined },
   },
   { timestamps: true }
 );

@@ -4,7 +4,11 @@
 // import Order from "./../models/order.model.js";
 // import Ecommerce from "../models/ecommerce.model.js";
 // import { v2 as cloudinary } from "cloudinary";
-
+"use server";
+import { getAuthStatus } from "@/lib/authMiddleware";
+import mongodbConnect from "@/lib/connect_Database";
+import Product from "@/models/product.model";
+import User from "@/models/user.model";
 
 // export const shuffleProducts = async (req, res) => {
 //   try {
@@ -29,20 +33,54 @@
 //   }
 // };
 
-// export const gethomeProducts = async (req, res) => {
-//   const page = parseInt(req.query.page) || 1;
-//   const limit = 10;
-//   const skip = (page - 1) * limit;
-//   try {
-//     const totalCount = await Product.countDocuments();
-//     const products = await Product.find().skip(skip).limit(limit);
-//     res.status(200).json({ products, totalCount });
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).json({ error: "Internal Server Error" });
-//   }
-// };
+export const getHomeProducts = async () => {
+  try {
+    await mongodbConnect();
+    const products = await Product.find().limit(10).lean();
 
+    return {
+      success: true,
+      data: products,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      success: false,
+      error: "Internal Server Error",
+    };
+  }
+};
+
+export const getProductDetails = async (productId: string) => {
+  try {
+    await mongodbConnect();
+
+    if (!productId) {
+      return {
+        success: false,
+        error: "Product not found",
+      };
+    }
+    const id = productId;
+    const product = await Product.findById(id).lean();
+    if (!product) {
+      return {
+        success: false,
+        error: "Product not found",
+      };
+    }
+    return {
+      success: true,
+      data: product,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      success: false,
+      error: "Internal Server Error",
+    };
+  }
+};
 // export const getAllUsers = async (req, res) => {
 //   try {
 //     const users = await User.find().select(

@@ -1,3 +1,4 @@
+"use client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DollarSign, Users, ShoppingBag, TrendingUp } from "lucide-react"
@@ -5,13 +6,39 @@ import AdminHeader from "@/components/admin/admin-header"
 import SalesChart from "@/components/admin/sales-chart"
 import TopProductsTable from "@/components/admin/top-products-table"
 import RecentOrdersTable from "@/components/admin/recent-orders-table"
+import { useQuery } from "@tanstack/react-query"
+import { StoreDetails } from "@/actions/admin.action"
+import { toast } from "@/components/ui/use-toast"
+
 
 export default function AdminDashboard() {
+  const { data: StoreDetail, isLoading } = useQuery<Record<string, any> | null>({
+      queryKey: ["StoreDetails"],
+      queryFn: async () => {
+        try {
+          const res = await StoreDetails();
+          if (!res.success) throw new Error(res.error || "Something went wrong");
+          
+          return res.data;
+        } catch (error) {
+          console.error("Error fetching user stats:", error);
+          toast({
+            title: "Error",
+            description: `${error}`,
+            variant: "destructive",
+          })
+          return null;
+        }
+      },
+    });
+
+    console.log(StoreDetail);
   return (
     <div className="flex flex-col gap-6">
       <AdminHeader title="Dashboard" />
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {StoreDetail ? (<section className="space-y-6">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
@@ -142,6 +169,11 @@ export default function AdminDashboard() {
           </Card>
         </TabsContent>
       </Tabs>
+      </section>) :( <section>
+        <div className="mx-auto max-w-3xl text-center">
+          <h1 className="text-3xl font-bold sm:text-4xl">No Store Found Yet</h1>
+        </div>
+        </section>)}
     </div>
   )
 }

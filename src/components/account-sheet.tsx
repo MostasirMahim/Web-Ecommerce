@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -32,9 +32,9 @@ export default function AccountSheet({
   const { isLoggedIn, profile, login, logout, updateProfile } = useUserStore();
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [isOpen, setIsOpen] = useState(false);
-
+  const queryClient = useQueryClient();
   const [loginForm, setLoginForm] = useState({
-    email: "",
+    number: "",
     password: "",
   });
 
@@ -44,33 +44,191 @@ export default function AccountSheet({
     email: "",
     password: "",
     confirmPassword: "",
-    phone: "",
+    number: "",
     acceptTerms: false,
   });
+
+
+
+  const { data: authUser, isLoading } = useQuery<Record<string, any> | null>({
+    queryKey: ["authUser"],
+    queryFn: async () => {
+      try {
+        const res = await fetch(`/api/auth`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Something went wrong");
+        return data;
+      } catch (error) {
+        console.error("Error fetching user stats:", error);
+        return null;
+      }
+    },
+  });
+  console.log(authUser);
+
+  const { mutate: register, isPending: isRegistering }  = useMutation({
+    mutationFn: async (data: any) => {
+      try {
+        const res = await fetch("/api/auth", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
+  
+  
+        const result = await res.json();
+        if(!res.ok){
+          toast({
+            title: "Register failed",
+            description: result.error || "Something went wrong.",
+            variant: "destructive",
+          })
+          throw new Error(result.error || "Something went wrong");
+        }
+        return result;
+      } catch (error) {
+        console.log(error);
+        throw new Error("Register failed");
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["authUser"] });
+      toast({
+        title: "Registered successfully",
+        description: "Welcome to ShopNow!",
+      });
+      setIsOpen(false);
+    },
+  });
+  const { mutate: Login, isPending: isLogging }  = useMutation({
+    mutationFn: async (data: any) => {
+      try {
+        const res = await fetch("/api/auth", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
+  
+  
+        const result = await res.json();
+        if(!res.ok){
+          toast({
+            title: "Login failed",
+            description: result.error || "Something went wrong.",
+            variant: "destructive",
+          })
+          throw new Error(result.error || "Something went wrong");
+        }
+        return result;
+      } catch (error) {
+        console.log(error);
+        throw new Error("Login failed");
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["authUser"] });
+      toast({
+        title: "Logged in successfully",
+        description: "Welcome to ShopNow!",
+      });
+      setIsOpen(false);
+    },
+  });
+
+  
+  const { mutate: Logout, isPending: isLoggingOut }  = useMutation({
+    mutationFn: async () => {
+      try {
+        const res = await fetch("/api/auth", {
+          method: "DELETE",
+        });
+  
+  
+        const result = await res.json();
+        if(!res.ok){
+          toast({
+            title: "Logout failed",
+            description: result.error || "Something went wrong.",
+            variant: "destructive",
+          })
+          throw new Error(result.error || "Something went wrong");
+        }
+        return result;
+      } catch (error) {
+        console.log(error);
+        throw new Error("Logout failed");
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["authUser"] });
+      toast({
+        title: "Logged out successfully",
+        description: "Have a nice day at ShopNow!",
+      });
+      setIsOpen(false);
+    },
+  });
+
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if(registerForm.password.length < 4 || registerForm.confirmPassword.length < 4){
+      return toast({
+        title: "Passwords must be at least 4 characters long",
+        description: "Minimum password length is 4 characters.",
+        variant: "destructive",
+      })
+    };
+    if(registerForm.password !== registerForm.confirmPassword){
+      return toast({
+        title: "Passwords do not match",
+        description: "Please enter both passwords the same.",
+        variant: "destructive",
+      })
+    };
+    if(!registerForm.acceptTerms){
+      return toast({
+        title: "Please accept terms and conditions",
+        description: "Please enter both email and password.",
+        variant: "destructive",
+      })
+    }
+    if(registerForm.number.length !== 11){
+      return toast({
+        title: "Please enter a valid number",
+        description: "Please enter both email and password.",
+        variant: "destructive",
+      })
+    }
+    
+    const name = registerForm.firstName + "" + registerForm.lastName;
+    
+    const userData = {
+      name,
+      email: registerForm.email,
+      password: registerForm.password,
+      number: registerForm.number,
+    };
+
+    register(userData);
+    }
+
+  const handleLogout = () => {
+    Logout();
+    setIsOpen(false);
+  };
+
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Demo login - in a real app, this would validate with a backend
-    if (loginForm.email && loginForm.password) {
-      login({
-        firstName: "John",
-        lastName: "Doe",
-        email: loginForm.email,
-        phone: "555-123-4567",
-        address: "123 Main St",
-        city: "New York",
-        state: "NY",
-        zipCode: "10001",
-        country: "USA",
-      });
-
-      toast({
-        title: "Logged in successfully",
-        description: "Welcome back to ShopNow!",
-      });
-
-      setIsOpen(false);
+   
+    if (loginForm.number && loginForm.password) {
+    Login(loginForm);
     } else {
       toast({
         title: "Login failed",
@@ -79,65 +237,7 @@ export default function AccountSheet({
       });
     }
   };
-
-  const handleRegister = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validate form
-    if (registerForm.password !== registerForm.confirmPassword) {
-      toast({
-        title: "Passwords don't match",
-        description: "Please make sure your passwords match.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!registerForm.acceptTerms) {
-      toast({
-        title: "Terms not accepted",
-        description: "Please accept the terms and conditions to register.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Demo registration - in a real app, this would send data to a backend
-    login({
-      firstName: registerForm.firstName,
-      lastName: registerForm.lastName,
-      email: registerForm.email,
-      phone: registerForm.phone || "",
-      address: "",
-      city: "",
-      state: "",
-      zipCode: "",
-      country: "",
-    });
-
-    toast({
-      title: "Registration successful",
-      description: "Your account has been created successfully.",
-    });
-
-    setIsOpen(false);
-  };
-
-  const handleLogout = () => {
-    logout();
-    setIsOpen(false);
-
-    toast({
-      title: "Logged out",
-      description: "You have been logged out successfully.",
-    });
-  };
-
-  const handleViewFullAccount = () => {
-    router.push("/account");
-    setIsOpen(false);
-  };
-
+  
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>{trigger}</SheetTrigger>
@@ -147,7 +247,7 @@ export default function AccountSheet({
       >
         <SheetHeader className="mb-5">
           <div className="flex items-center justify-between">
-            <SheetTitle>{isLoggedIn ? "My Account" : "Account"}</SheetTitle>
+            <SheetTitle>{authUser?.role =="user" ? "My Account" : "Account"}</SheetTitle>
             <SheetClose className="rounded-full p-1 hover:bg-muted">
               <X className="h-5 w-5" />
               <span className="sr-only">Close</span>
@@ -155,23 +255,23 @@ export default function AccountSheet({
           </div>
         </SheetHeader>
 
-        {isLoggedIn ? (
+        {authUser?.role =="user"|| authUser?.role =="admin" ? (
           <div className="space-y-6">
             {/* User Profile Summary */}
             <div className="flex items-center gap-4 rounded-lg border p-4">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-xl font-semibold text-primary-foreground">
-                {profile?.firstName?.charAt(0)}
-                {profile?.lastName?.charAt(0)}
+                {authUser?.name?.charAt(0).toUpperCase()}
+                {authUser?.name?.charAt(1).toUpperCase()}
               </div>
               <div>
                 <h3 className="text-lg font-medium">
-                  {profile?.firstName} {profile?.lastName}
+                  {authUser?.name}
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  {profile?.email}
+                  {authUser?.email}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {profile?.phone}
+                  {authUser?.number}
                 </p>
               </div>
             </div>
@@ -234,22 +334,19 @@ export default function AccountSheet({
               <div className="space-y-2">
                 <h3 className="font-medium">Default Address</h3>
                 <div className="rounded-lg border p-3 text-sm">
-                  <p>{profile.address}</p>
-                  <p>
-                    {profile.city}, {profile.state} {profile.zipCode}
-                  </p>
-                  <p>{profile.country}</p>
+                  <p>{authUser?.address[0]}</p>
                 </div>
               </div>
             )}
 
             {/* Actions */}
             <div className="flex flex-col gap-2">
-              <Button onClick={handleViewFullAccount}>View Full Account</Button>
-              <Button variant="outline" onClick={handleLogout}>
+              <Button onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />
-                Logout
-              </Button>
+                Logout</Button>
+             {authUser?.role == "admin" && <Button variant="outline" onClick={() => router.push("/admin")}>
+                Admin Panel
+              </Button>}
             </div>
           </div>
         ) : (
@@ -269,14 +366,14 @@ export default function AccountSheet({
             <TabsContent value="login" className="mt-4">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="sheet-login-email">Email</Label>
+                  <Label htmlFor="sheet-login-email">Phone</Label>
                   <Input
                     id="sheet-login-email"
-                    type="email"
-                    placeholder="your.email@example.com"
-                    value={loginForm.email}
+                    type="number"
+                    placeholder="01700000000"
+                    value={loginForm.number}
                     onChange={(e) =>
-                      setLoginForm({ ...loginForm, email: e.target.value })
+                      setLoginForm({ ...loginForm, number: e.target.value })
                     }
                     required
                   />
@@ -363,11 +460,11 @@ export default function AccountSheet({
                     id="sheet-register-phone"
                     type="tel"
                     placeholder="555-123-4567"
-                    value={registerForm.phone}
+                    value={registerForm.number}
                     onChange={(e) =>
                       setRegisterForm({
                         ...registerForm,
-                        phone: e.target.value,
+                        number: e.target.value,
                       })
                     }
                   />

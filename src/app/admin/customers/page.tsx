@@ -9,11 +9,34 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import AdminHeader from "@/components/admin/admin-header"
 import CustomersTable from "@/components/admin/customers-table"
+import { useQuery } from "@tanstack/react-query"
+import { getCustomers } from "@/actions/admin.action"
+import { useToast } from "@/components/ui/use-toast"
 
 export default function AdminCustomers() {
   const [filter, setFilter] = useState("all")
   const [search, setSearch] = useState("")
+ const { toast } = useToast();
+     const { data: customers, isLoading } = useQuery<Array<Record<string, any>> | []>({
+      queryKey: ["StoreCustomers"],
+      queryFn: async () => {
+        try {
+          const res = await getCustomers();
+          if (!res.success) throw new Error(res.error || "Something went wrong");
+          return res.data || [];
+        } catch (error) {
+          console.error("Error fetching user stats:", error);
+          toast({
+            title: "Error",
+            description: `${error}`,
+            variant: "destructive",
+          })
+          return [];
+        }
+      },
+    });
 
+    console.log(customers);
   return (
     <div className="flex-1 space-y-4">
       <AdminHeader title="Customers" description="Manage your customer accounts" />

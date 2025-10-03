@@ -9,10 +9,10 @@ export async function GET() {
   try {
     const { isAuthenticated, user } = await getAuthStatus();
     if (!isAuthenticated) {
-      return NextResponse.json({ user: { role: "guest" } }, { status: 200 });
+      return NextResponse.json({ role: "guest" }, { status: 200 });
     }
 
-    return NextResponse.json({ user }, { status: 200 });
+    return NextResponse.json(user, { status: 200 });
   } catch (error) {
     console.log(error);
     return NextResponse.json(
@@ -25,8 +25,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     await mongodbConnect();
-    const { number, password } = await req.json();
-
+    const { number, password, name, email } = await req.json();
     if (!number || !password) {
       return NextResponse.json(
         { error: "Please fill all the fields" },
@@ -44,7 +43,7 @@ export async function POST(req: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newuser: any = new User({ number, password: hashedPassword });
+    const newuser: any = new User({ number, password: hashedPassword, name, email });
     await newuser.save();
 
     const response = NextResponse.json(
@@ -53,7 +52,6 @@ export async function POST(req: Request) {
     );
 
     generateToken(newuser?._id.toString() as string, response);
-
     return response;
   } catch (error) {
     console.error(error);
@@ -64,7 +62,7 @@ export async function POST(req: Request) {
   }
 }
 
-export async function Patch(req: NextRequest) {
+export async function PATCH(req: NextRequest) {
   try {
     await mongodbConnect();
     const { number, password } = await req.json();

@@ -1,117 +1,377 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Palette, ImageIcon, Type, LayoutGrid, Save } from "lucide-react"
+import { useState } from "react";
+import {
+  Palette,
+  ImageIcon,
+  Type,
+  LayoutGrid,
+  Save,
+  Grid,
+  Tag,
+  Plus,
+  Upload,
+} from "lucide-react";
 
-import AdminHeader from "@/components/admin/admin-header"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
-import { products } from "@/lib/data"
+import AdminHeader from "@/components/admin/admin-header";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { products } from "@/lib/data";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { FieldArray, FormikProvider, useFormik } from "formik";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  categoryCuz,
+  footerCuz,
+  generalCuz,
+  getSettings,
+  homepageCuz,
+  productCuz,
+} from "@/actions/settings.action";
 
 export default function CustomizePage() {
-  const [activeTab, setActiveTab] = useState("general")
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState("general");
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const queryClient = useQueryClient();
 
-  // Mock data for customization settings
-  const [settings, setSettings] = useState({
-    general: {
-      siteName: "ShopNow",
-      siteDescription: "Your One-Stop E-commerce Shop",
+  const { data: settingsData, isLoading } = useQuery<Record<
+    string,
+    any
+  > | null>({
+    queryKey: ["settingsData"],
+    queryFn: async () => {
+      try {
+        const res = await getSettings();
+        if (!res.success) {
+          toast({
+            title: "Error fetching settings",
+            description: res.error || "Something went wrong.",
+            variant: "destructive",
+          });
+          return null;
+        }
+        return res.data;
+      } catch (error) {
+        console.error("Error fetching user stats:", error);
+        return null;
+      }
+    },
+  });
+
+  const { mutate: generalCustomize, isPending: isGeneralPending } = useMutation(
+    {
+      mutationFn: async (data: any) => {
+        try {
+          const res = await generalCuz(data);
+          if (!res.success) {
+            toast({
+              title: "Update failed",
+              description: res.error || "Something went wrong.",
+              variant: "destructive",
+            });
+            throw new Error(res.error || "Something went wrong");
+          }
+          return res.data;
+        } catch (error) {
+          console.log(error);
+          throw new Error("Update failed");
+        }
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["settingsData"] });
+        generalForm.resetForm();
+        toast({
+          title: "Updated successfully",
+          description: "Refresh to see the changes!",
+        });
+      },
+    }
+  );
+  const { mutate: homepageCustomize, isPending: isHomepagePending } =
+    useMutation({
+      mutationFn: async (data: any) => {
+        try {
+          const res = await homepageCuz(data);
+          if (!res.success) {
+            toast({
+              title: "Update failed",
+              description: res.error || "Something went wrong.",
+              variant: "destructive",
+            });
+            throw new Error(res.error || "Something went wrong");
+          }
+          return res.data;
+        } catch (error) {
+          console.log(error);
+          throw new Error("Update failed");
+        }
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["settingsData"] });
+        homepageForm.resetForm();
+        toast({
+          title: "Updated successfully",
+          description: "Refresh to see the changes!",
+        });
+      },
+    });
+
+  const { mutate: footerCustomize, isPending: isFooterPending } = useMutation({
+    mutationFn: async (data: any) => {
+      try {
+        const res = await footerCuz(data);
+        if (!res.success) {
+          toast({
+            title: "Update failed",
+            description: res.error || "Something went wrong.",
+            variant: "destructive",
+          });
+          throw new Error(res.error || "Something went wrong");
+        }
+        return res.data;
+      } catch (error) {
+        console.log(error);
+        throw new Error("Update failed");
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["settingsData"] });
+      footerForm.resetForm();
+      toast({
+        title: "Updated successfully",
+        description: "Refresh to see the changes!",
+      });
+    },
+  });
+
+  const { mutate: productCustomize, isPending: isProductPending } = useMutation(
+    {
+      mutationFn: async (data: any) => {
+        try {
+          const res = await productCuz(data);
+          if (!res.success) {
+            toast({
+              title: "Update failed",
+              description: res.error || "Something went wrong.",
+              variant: "destructive",
+            });
+            throw new Error(res.error || "Something went wrong");
+          }
+          return res.data;
+        } catch (error) {
+          console.log(error);
+          throw new Error("Update failed");
+        }
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["settingsData"] });
+        productForm.resetForm();
+        toast({
+          title: "Updated successfully",
+          description: "Refresh to see the changes!",
+        });
+      },
+    }
+  );
+  const { mutate: categoryCustomize, isPending: isCategoryPending } =
+    useMutation({
+      mutationFn: async (data: any) => {
+        try {
+          const res = await categoryCuz(data);
+          if (!res.success) {
+            toast({
+              title: "Update failed",
+              description: res.error || "Something went wrong.",
+              variant: "destructive",
+            });
+            throw new Error(res.error || "Something went wrong");
+          }
+          return res.data;
+        } catch (error) {
+          console.log(error);
+          throw new Error("Update failed");
+        }
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["settingsData"] });
+        createCategory.resetForm();
+        toast({
+          title: "Updated successfully",
+          description: "Refresh to see the changes!",
+        });
+      },
+    });
+
+  const categories = [
+    {
+      category: "Electronics",
+      subcategory: ["Mobile", "Laptop", "Tablet", "Camera"],
+    },
+    {
+      category: "Clothing",
+      subcategory: ["Men", "Women", "Kids", "Accessories"],
+    },
+    {
+      category: "Home",
+      subcategory: ["Furniture", "Kitchen", "Bedroom", "Bathroom"],
+    },
+    {
+      category: "Beauty",
+      subcategory: ["Skin Care", "Hair Care", "Makeup", "Fragrance"],
+    },
+  ];
+
+  const createCategory = useFormik({
+    initialValues: {
+      category: "",
+      subcategory: [],
+      state: "",
+    },
+
+    onSubmit: (values) => {
+      console.log(values);
+      categoryCustomize(values);
+    },
+  });
+
+  // 1. General Settings
+  const generalForm = useFormik({
+    initialValues: {
+      siteName: "",
+      siteDescription: "",
       logo: "/logo.png",
       favicon: "/favicon.ico",
       primaryColor: "#0f172a",
       accentColor: "#3b82f6",
     },
-    homepage: {
-      heroTitle: "Discover Amazing Products",
-      heroSubtitle: "Shop the latest trends at unbeatable prices",
+
+    onSubmit: (values) => {
+      generalCustomize(values);
+    },
+  });
+
+  // 2. Homepage Settings
+  const homepageForm = useFormik({
+    initialValues: {
+      heroTitle: "",
+      heroSubtitle: "",
       heroImage: "/hero.jpg",
       showFeaturedProducts: true,
-      featuredProductsTitle: "Featured Products",
+      featuredProductsTitle: "",
       featuredProductIds: ["1", "2", "3", "4"],
       showNewArrivals: true,
       newArrivalsTitle: "New Arrivals",
       showCategories: true,
-      categoriesTitle: "Shop by Category",
+      categoriesTitle: "",
+      carouselSlides: [
+        {
+          title: "",
+          subtitle: "",
+          image: "",
+          color: "",
+          buttonText: "",
+          buttonLink: "",
+        },
+      ],
+
+      // Temporary fields for slide creation
+      newSlideTitle: "",
+      newSlideSubtitle: "",
+      newSlideImage: "",
+      newSlideColor: "",
+      newSlideButtonText: "",
+      newSlideButtonLink: "",
     },
-    footer: {
+    onSubmit: (values) => {
+      console.log(values);
+    },
+  });
+
+  // 3. Footer Settings
+  const footerForm = useFormik({
+    initialValues: {
       showNewsletter: true,
-      newsletterTitle: "Subscribe to our newsletter",
-      newsletterText: "Get the latest updates on new products and upcoming sales",
-      copyrightText: "© 2023 ShopNow. All rights reserved.",
+      newsletterTitle: "",
+      newsletterText: "",
+      copyrightText: "",
       showSocialLinks: true,
-      facebook: "https://facebook.com",
-      twitter: "https://twitter.com",
-      instagram: "https://instagram.com",
+      facebook: "",
+      twitter: "",
+      instagram: "",
     },
-    product: {
+    onSubmit: (values) => {
+      footerCustomize(values);
+    },
+  });
+
+  // 4. Product Settings
+  const productForm = useFormik({
+    initialValues: {
       showRelatedProducts: true,
-      relatedProductsTitle: "You may also like",
+      relatedProductsTitle: "",
       showReviews: true,
       enableRatings: true,
     },
-  })
+    onSubmit: (values) => {
+      productCustomize(values);
+    },
+  });
 
-  const handleGeneralChange = (field, value) => {
-    setSettings({
-      ...settings,
-      general: {
-        ...settings.general,
-        [field]: value,
-      },
-    })
+  if (
+    isGeneralPending ||
+    isHomepagePending ||
+    isFooterPending ||
+    isProductPending ||
+    isCategoryPending
+  ) {
+    return (
+      <div className="container mx-auto p-4 md:p-6">
+        <AdminHeader
+          title="Customize Website"
+          description="Customize the appearance and content of your website"
+        />
+        <div className="mt-6">Loading...</div>
+      </div>
+    );
   }
-
-  const handleHomepageChange = (field, value) => {
-    setSettings({
-      ...settings,
-      homepage: {
-        ...settings.homepage,
-        [field]: value,
-      },
-    })
-  }
-
-  const handleFooterChange = (field, value) => {
-    setSettings({
-      ...settings,
-      footer: {
-        ...settings.footer,
-        [field]: value,
-      },
-    })
-  }
-
-  const handleProductChange = (field, value) => {
-    setSettings({
-      ...settings,
-      product: {
-        ...settings.product,
-        [field]: value,
-      },
-    })
-  }
-
-  const handleFeaturedProductChange = (productId) => {
-    const currentIds = settings.homepage.featuredProductIds
-    const newIds = currentIds.includes(productId)
-      ? currentIds.filter((id) => id !== productId)
-      : [...currentIds, productId]
-
-    handleHomepageChange("featuredProductIds", newIds)
-  }
-
-  const handleSaveSettings = () => {
-    // In a real app, this would save to a database
-    console.log("Saving settings:", settings)
-    // Show success message
-    alert("Settings saved successfully!")
-  }
-
   return (
     <div className="container mx-auto p-4 md:p-6">
       <AdminHeader
@@ -119,7 +379,6 @@ export default function CustomizePage() {
         description="Customize the appearance and content of your website"
         action={{
           label: "Save Changes",
-          onClick: handleSaveSettings,
         }}
       />
 
@@ -134,6 +393,13 @@ export default function CustomizePage() {
               <TabsTrigger value="homepage" className="flex items-center gap-2">
                 <LayoutGrid className="h-4 w-4" />
                 <span>Homepage</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="categories"
+                className="flex items-center gap-2"
+              >
+                <Grid className="h-4 w-4" />
+                <span>Categories</span>
               </TabsTrigger>
               <TabsTrigger value="footer" className="flex items-center gap-2">
                 <Type className="h-4 w-4" />
@@ -150,7 +416,9 @@ export default function CustomizePage() {
             <Card>
               <CardHeader>
                 <CardTitle>General Settings</CardTitle>
-                <CardDescription>Customize the general appearance of your website</CardDescription>
+                <CardDescription>
+                  Customize the general appearance of your website
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
@@ -158,16 +426,23 @@ export default function CustomizePage() {
                     <Label htmlFor="siteName">Site Name</Label>
                     <Input
                       id="siteName"
-                      value={settings.general.siteName}
-                      onChange={(e) => handleGeneralChange("siteName", e.target.value)}
+                      value={generalForm.values.siteName}
+                      onChange={generalForm.handleChange}
+                      placeholder={`${
+                        settingsData?.general.siteName || "ShopNow"
+                      }`}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="siteDescription">Site Description</Label>
                     <Input
                       id="siteDescription"
-                      value={settings.general.siteDescription}
-                      onChange={(e) => handleGeneralChange("siteDescription", e.target.value)}
+                      value={generalForm.values.siteDescription}
+                      onChange={generalForm.handleChange}
+                      placeholder={`${
+                        settingsData?.general.siteDescription ||
+                        "Your online store"
+                      }`}
                     />
                   </div>
                 </div>
@@ -178,8 +453,8 @@ export default function CustomizePage() {
                     <div className="flex gap-2">
                       <Input
                         id="logo"
-                        value={settings.general.logo}
-                        onChange={(e) => handleGeneralChange("logo", e.target.value)}
+                        value={generalForm.values.logo}
+                        onChange={generalForm.handleChange}
                       />
                       <Button variant="outline" size="icon">
                         <ImageIcon className="h-4 w-4" />
@@ -191,8 +466,8 @@ export default function CustomizePage() {
                     <div className="flex gap-2">
                       <Input
                         id="favicon"
-                        value={settings.general.favicon}
-                        onChange={(e) => handleGeneralChange("favicon", e.target.value)}
+                        value={generalForm.values.favicon}
+                        onChange={generalForm.handleChange}
                       />
                       <Button variant="outline" size="icon">
                         <ImageIcon className="h-4 w-4" />
@@ -207,13 +482,15 @@ export default function CustomizePage() {
                     <div className="flex gap-2">
                       <Input
                         id="primaryColor"
-                        value={settings.general.primaryColor}
-                        onChange={(e) => handleGeneralChange("primaryColor", e.target.value)}
+                        name="primaryColor"
+                        value={generalForm.values.primaryColor}
+                        onChange={generalForm.handleChange}
                       />
                       <input
                         type="color"
-                        value={settings.general.primaryColor}
-                        onChange={(e) => handleGeneralChange("primaryColor", e.target.value)}
+                        name="primaryColor"
+                        value={generalForm.values.primaryColor}
+                        onChange={generalForm.handleChange}
                         className="h-10 w-10 cursor-pointer rounded-md border"
                       />
                     </div>
@@ -223,13 +500,15 @@ export default function CustomizePage() {
                     <div className="flex gap-2">
                       <Input
                         id="accentColor"
-                        value={settings.general.accentColor}
-                        onChange={(e) => handleGeneralChange("accentColor", e.target.value)}
+                        name="accentColor"
+                        value={generalForm.values.accentColor}
+                        onChange={generalForm.handleChange}
                       />
                       <input
                         type="color"
-                        value={settings.general.accentColor}
-                        onChange={(e) => handleGeneralChange("accentColor", e.target.value)}
+                        name="accentColor"
+                        value={generalForm.values.accentColor}
+                        onChange={generalForm.handleChange}
                         className="h-10 w-10 cursor-pointer rounded-md border"
                       />
                     </div>
@@ -237,7 +516,10 @@ export default function CustomizePage() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button onClick={handleSaveSettings} className="ml-auto flex items-center gap-2">
+                <Button
+                  onClick={() => generalForm.handleSubmit()}
+                  className="ml-auto flex items-center gap-2"
+                >
                   <Save className="h-4 w-4" />
                   Save Changes
                 </Button>
@@ -249,7 +531,9 @@ export default function CustomizePage() {
             <Card>
               <CardHeader>
                 <CardTitle>Homepage Settings</CardTitle>
-                <CardDescription>Customize the content and layout of your homepage</CardDescription>
+                <CardDescription>
+                  Customize the content and layout of your homepage
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-4">
@@ -259,16 +543,24 @@ export default function CustomizePage() {
                       <Label htmlFor="heroTitle">Hero Title</Label>
                       <Input
                         id="heroTitle"
-                        value={settings.homepage.heroTitle}
-                        onChange={(e) => handleHomepageChange("heroTitle", e.target.value)}
+                        value={homepageForm.values.heroTitle}
+                        onChange={homepageForm.handleChange}
+                        placeholder={`${
+                          settingsData?.homepage.heroTitle ||
+                          "Welcome to ShopNow"
+                        }`}
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="heroSubtitle">Hero Subtitle</Label>
                       <Input
                         id="heroSubtitle"
-                        value={settings.homepage.heroSubtitle}
-                        onChange={(e) => handleHomepageChange("heroSubtitle", e.target.value)}
+                        value={homepageForm.values.heroSubtitle}
+                        onChange={homepageForm.handleChange}
+                        placeholder={`${
+                          settingsData?.homepage.heroSubtitle ||
+                          "Your one-stop shop for everything"
+                        }`}
                       />
                     </div>
                   </div>
@@ -277,8 +569,9 @@ export default function CustomizePage() {
                     <div className="flex gap-2">
                       <Input
                         id="heroImage"
-                        value={settings.homepage.heroImage}
-                        onChange={(e) => handleHomepageChange("heroImage", e.target.value)}
+                        value={homepageForm.values.heroImage}
+                        onChange={homepageForm.handleChange}
+                        placeholder="/hero.jpg"
                       />
                       <Button variant="outline" size="icon">
                         <ImageIcon className="h-4 w-4" />
@@ -293,19 +586,27 @@ export default function CustomizePage() {
                     <div className="flex items-center space-x-2">
                       <Switch
                         id="showFeaturedProducts"
-                        checked={settings.homepage.showFeaturedProducts}
-                        onCheckedChange={(checked) => handleHomepageChange("showFeaturedProducts", checked)}
+                        checked={homepageForm.values.showFeaturedProducts}
+                        onCheckedChange={(checked) => {
+                          productForm.setFieldValue(
+                            "showFeaturedProducts",
+                            checked
+                          );
+                        }}
                       />
                       <Label htmlFor="showFeaturedProducts">Show Section</Label>
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="featuredProductsTitle">Section Title</Label>
+                    <Label htmlFor="featuredProductsTitle">
+                      Featured Products Title
+                    </Label>
                     <Input
                       id="featuredProductsTitle"
-                      value={settings.homepage.featuredProductsTitle}
-                      onChange={(e) => handleHomepageChange("featuredProductsTitle", e.target.value)}
+                      value={homepageForm.values.featuredProductsTitle}
+                      onChange={homepageForm.handleChange}
+                      placeholder="Featured Products"
                     />
                   </div>
 
@@ -316,11 +617,10 @@ export default function CustomizePage() {
                         <div
                           key={product.id}
                           className={`cursor-pointer rounded-md border p-2 transition-all ${
-                            settings.homepage.featuredProductIds.includes(product.id)
+                            true
                               ? "border-primary bg-primary/10"
                               : "hover:border-muted-foreground"
                           }`}
-                          onClick={() => handleFeaturedProductChange(product.id)}
                         >
                           <div className="aspect-square w-full overflow-hidden rounded-md bg-muted">
                             <img
@@ -329,7 +629,9 @@ export default function CustomizePage() {
                               className="h-full w-full object-cover"
                             />
                           </div>
-                          <div className="mt-2 text-sm font-medium">{product.name}</div>
+                          <div className="mt-2 text-sm font-medium">
+                            {product.name}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -342,8 +644,10 @@ export default function CustomizePage() {
                     <div className="flex items-center space-x-2">
                       <Switch
                         id="showNewArrivals"
-                        checked={settings.homepage.showNewArrivals}
-                        onCheckedChange={(checked) => handleHomepageChange("showNewArrivals", checked)}
+                        checked={homepageForm.values.showNewArrivals}
+                        onCheckedChange={(checked) => {
+                          productForm.setFieldValue("showNewArrivals", checked);
+                        }}
                       />
                       <Label htmlFor="showNewArrivals">Show Section</Label>
                     </div>
@@ -353,9 +657,193 @@ export default function CustomizePage() {
                     <Label htmlFor="newArrivalsTitle">Section Title</Label>
                     <Input
                       id="newArrivalsTitle"
-                      value={settings.homepage.newArrivalsTitle}
-                      onChange={(e) => handleHomepageChange("newArrivalsTitle", e.target.value)}
+                      value={homepageForm.values.newArrivalsTitle}
+                      onChange={homepageForm.handleChange}
+                      placeholder={`${
+                        settingsData?.homepage.newArrivalsTitle ||
+                        "New Arrivals"
+                      }`}
                     />
+                  </div>
+                </div>
+
+                <div className="space-y-4 pt-4 border-t">
+                  <h3 className="text-lg font-medium">Carousel Slides</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Customize the main carousel slides on your homepage
+                  </p>
+
+                  <div className="space-y-6">
+                    {homepageForm.values.carouselSlides.map((slide, index) => (
+                      <Card key={index} className="border-dashed">
+                        <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                          <CardTitle className="text-base">
+                            Slide {index + 1}
+                          </CardTitle>
+                          {homepageForm.values.carouselSlides.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => {
+                                const updatedSlides =
+                                  homepageForm.values.carouselSlides.filter(
+                                    (_, i) => i !== index
+                                  );
+                                homepageForm.setFieldValue(
+                                  "carouselSlides",
+                                  updatedSlides
+                                );
+                              }}
+                            >
+                              Remove Slide
+                            </Button>
+                          )}
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="grid gap-4 md:grid-cols-2">
+                            <div className="space-y-2">
+                              <Label htmlFor={`carouselSlides[${index}].title`}>
+                                Title
+                              </Label>
+                              <Input
+                                id={`carouselSlides[${index}].title`}
+                                name={`carouselSlides[${index}].title`}
+                                value={slide.title}
+                                onChange={homepageForm.handleChange}
+                                placeholder="e.g. Summer Collection 2024"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label
+                                htmlFor={`carouselSlides[${index}].subtitle`}
+                              >
+                                Subtitle
+                              </Label>
+                              <Input
+                                id={`carouselSlides[${index}].subtitle`}
+                                name={`carouselSlides[${index}].subtitle`}
+                                value={slide.subtitle}
+                                onChange={homepageForm.handleChange}
+                                placeholder="e.g. Discover our latest arrivals..."
+                              />
+                            </div>
+                          </div>
+
+                          {/* Image Upload Section */}
+                          <div className="space-y-2">
+                            <Label htmlFor={`carouselSlides[${index}].image`}>
+                              Slide Image
+                            </Label>
+                            <div className="flex flex-col gap-4">
+                              <div className="flex gap-2">
+                                <Input
+                                  id={`carouselSlides[${index}].image`}
+                                  name={`carouselSlides[${index}].image`}
+                                  value={slide.image}
+                                  onChange={homepageForm.handleChange}
+                                  placeholder="/images/carousel-bg.jpg"
+                                />
+                                <Button variant="outline" size="icon">
+                                  <ImageIcon className="h-4 w-4" />
+                                </Button>
+                              </div>
+
+                              {/* File Upload */}
+                              <div className="flex items-center gap-4">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={(e) => {
+                                    const file = e.currentTarget.files?.[0];
+                                    if (file) {
+                                      const reader = new FileReader();
+                                      reader.onloadend = () => {
+                                        homepageForm.setFieldValue(
+                                          `carouselSlides[${index}].image`,
+                                          reader.result
+                                        );
+                                      };
+                                      reader.readAsDataURL(file);
+                                    }
+                                  }}
+                                  className="text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+                                />
+                              </div>
+
+                              {/* Image Preview */}
+                              {slide.image && (
+                                <div className="relative w-full h-32 overflow-hidden rounded-md bg-muted">
+                                  <img
+                                    src={slide.image || "/placeholder.svg"}
+                                    alt={`Slide ${index + 1} preview`}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="grid gap-4 md:grid-cols-2">
+                            <div className="space-y-2">
+                              <Label
+                                htmlFor={`carouselSlides[${index}].buttonText`}
+                              >
+                                Button Text
+                              </Label>
+                              <Input
+                                id={`carouselSlides[${index}].buttonText`}
+                                name={`carouselSlides[${index}].buttonText`}
+                                value={slide.buttonText}
+                                onChange={homepageForm.handleChange}
+                                placeholder="e.g. Shop Now"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label
+                                htmlFor={`carouselSlides[${index}].buttonLink`}
+                              >
+                                Button Link
+                              </Label>
+                              <Input
+                                id={`carouselSlides[${index}].buttonLink`}
+                                name={`carouselSlides[${index}].buttonLink`}
+                                value={slide.buttonLink}
+                                onChange={homepageForm.handleChange}
+                                placeholder="e.g. /products"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Color Picker Section */}
+                          <div className="space-y-2">
+                            <Label htmlFor={`carouselSlides[${index}].color`}>
+                              Background Color
+                            </Label>
+                            <div className="flex gap-2">
+                              <Input
+                                id={`carouselSlides[${index}].color`}
+                                name={`carouselSlides[${index}].color`}
+                                value={slide.color}
+                                onChange={homepageForm.handleChange}
+                                placeholder="#3b82f6"
+                              />
+                              <input
+                                type="color"
+                                value={slide.color || "#3b82f6"}
+                                onChange={(e) => {
+                                  homepageForm.setFieldValue(
+                                    `carouselSlides[${index}].color`,
+                                    e.target.value
+                                  );
+                                }}
+                                className="h-10 w-10 cursor-pointer rounded-md border"
+                              />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
                   </div>
                 </div>
 
@@ -365,8 +853,10 @@ export default function CustomizePage() {
                     <div className="flex items-center space-x-2">
                       <Switch
                         id="showCategories"
-                        checked={settings.homepage.showCategories}
-                        onCheckedChange={(checked) => handleHomepageChange("showCategories", checked)}
+                        checked={homepageForm.values.showCategories}
+                        onCheckedChange={(checked) => {
+                          productForm.setFieldValue("showCategories", checked);
+                        }}
                       />
                       <Label htmlFor="showCategories">Show Section</Label>
                     </div>
@@ -376,14 +866,203 @@ export default function CustomizePage() {
                     <Label htmlFor="categoriesTitle">Section Title</Label>
                     <Input
                       id="categoriesTitle"
-                      value={settings.homepage.categoriesTitle}
-                      onChange={(e) => handleHomepageChange("categoriesTitle", e.target.value)}
+                      value={homepageForm.values.categoriesTitle}
+                      onChange={homepageForm.handleChange}
+                      placeholder={`${
+                        settingsData?.homepage.categoriesTitle ||
+                        "Sort by Category"
+                      }`}
                     />
                   </div>
                 </div>
               </CardContent>
               <CardFooter>
-                <Button onClick={handleSaveSettings} className="ml-auto flex items-center gap-2">
+                <Button
+                  onClick={() => homepageForm.handleSubmit()}
+                  className="ml-auto flex items-center gap-2"
+                >
+                  <Save className="h-4 w-4" />
+                  Save Changes
+                </Button>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="categories" className="space-y-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Categories Management</CardTitle>
+                  <CardDescription>
+                    Manage your store categories and subcategories
+                  </CardDescription>
+                </div>
+                <Dialog
+                  open={isAddingCategory}
+                  onOpenChange={setIsAddingCategory}
+                >
+                  <DialogTrigger asChild>
+                    <Button className="flex items-center gap-2">
+                      <Plus className="h-4 w-4" />
+                      Add Category
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[600px]">
+                    <DialogHeader>
+                      <DialogTitle>Add New Category</DialogTitle>
+                      <DialogDescription>
+                        Create a new category for your products. Fill in the
+                        details below.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex flex-col md:flex-row justify-start items-start gap-4 py-4">
+                      <section className="grid grid-cols-1 gap-4">
+                        <div>
+                          <Label
+                            htmlFor="categoryName"
+                            className="ml-2 text-md"
+                          >
+                            Category Name
+                          </Label>
+                          <Input
+                            className="mt-2 w-full"
+                            name="category"
+                            id="categoryName"
+                            value={createCategory.values.category}
+                            onChange={createCategory.handleChange}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="Subcategory" className="ml-2 text-md">
+                            Add Sub Category
+                          </Label>
+
+                          <div className="flex items-center gap-2">
+                            <Input
+                              className="mt-2 w-full"
+                              name="state"
+                              id="Subcategory"
+                              value={createCategory.values.state}
+                              onChange={createCategory.handleChange}
+                            />
+                            <Button
+                              onClick={() => {
+                                createCategory.setFieldValue("subcategory", [
+                                  ...createCategory.values.subcategory,
+                                  createCategory.values.state,
+                                ]);
+                                createCategory.setFieldValue("state", "");
+                              }}
+                            >
+                              <Plus className="h-4 w-4" /> Add
+                            </Button>
+                          </div>
+                        </div>
+                      </section>
+                      <div>
+                        <Label
+                          htmlFor="subcategoryName"
+                          className="ml-2 text-md"
+                        >
+                          Sub Categories
+                        </Label>
+                        {createCategory.values.subcategory &&
+                          createCategory.values.subcategory.map(
+                            (item, index) => (
+                              <p key={index} className="text-sm ml-2 py-2">
+                                {index + 1}. {item}
+                              </p>
+                            )
+                          )}
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsAddingCategory(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={() => createCategory.handleSubmit()}
+                        className="gap-2"
+                      >
+                        <Plus className="h-4 w-4" />
+                        Save
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <ScrollArea className="h-[400px] rounded-md border p-4">
+                      <Accordion type="single" collapsible className="w-full">
+                        {categories.map((category, index) => (
+                          <AccordionItem key={index} value={category.category}>
+                            <AccordionTrigger className="hover:no-underline">
+                              <div className="flex items-center gap-2">
+                                <span>{category.category}</span>
+                                <Badge variant="outline" className="ml-2">
+                                  {category.subcategory.length} subcategories
+                                </Badge>
+                              </div>
+                            </AccordionTrigger>
+                            <AccordionContent>
+                              <div className="space-y-4 pt-2">
+                                <div className="rounded-md border">
+                                  <Table>
+                                    <TableHeader>
+                                      <TableRow>
+                                        <TableHead>Name</TableHead>
+                                      </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                      {category.subcategory.length === 0 ? (
+                                        <TableRow>
+                                          <TableCell
+                                            colSpan={4}
+                                            className="h-16 text-center"
+                                          >
+                                            No subcategories found. Add your
+                                            first subcategory to get started.
+                                          </TableCell>
+                                        </TableRow>
+                                      ) : (
+                                        category.subcategory.map(
+                                          (subcategory: any, index) => (
+                                            <TableRow key={index}>
+                                              <TableCell className="font-medium">
+                                                {subcategory}
+                                              </TableCell>
+
+                                              <TableCell className="text-right">
+                                                <Button
+                                                  variant="default"
+                                                  size="sm"
+                                                >
+                                                  Edit
+                                                </Button>
+                                              </TableCell>
+                                            </TableRow>
+                                          )
+                                        )
+                                      )}
+                                    </TableBody>
+                                  </Table>
+                                </div>
+                              </div>
+                            </AccordionContent>
+                          </AccordionItem>
+                        ))}
+                      </Accordion>
+                    </ScrollArea>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button className="ml-auto flex items-center gap-2">
                   <Save className="h-4 w-4" />
                   Save Changes
                 </Button>
@@ -395,7 +1074,9 @@ export default function CustomizePage() {
             <Card>
               <CardHeader>
                 <CardTitle>Footer Settings</CardTitle>
-                <CardDescription>Customize the content and appearance of your website footer</CardDescription>
+                <CardDescription>
+                  Customize the content and appearance of your website footer
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-4">
@@ -404,8 +1085,10 @@ export default function CustomizePage() {
                     <div className="flex items-center space-x-2">
                       <Switch
                         id="showNewsletter"
-                        checked={settings.footer.showNewsletter}
-                        onCheckedChange={(checked) => handleFooterChange("showNewsletter", checked)}
+                        checked={footerForm.values.showNewsletter}
+                        onCheckedChange={(checked) => {
+                          productForm.setFieldValue("showSocialLinks", checked);
+                        }}
                       />
                       <Label htmlFor="showNewsletter">Show Newsletter</Label>
                     </div>
@@ -416,16 +1099,24 @@ export default function CustomizePage() {
                       <Label htmlFor="newsletterTitle">Newsletter Title</Label>
                       <Input
                         id="newsletterTitle"
-                        value={settings.footer.newsletterTitle}
-                        onChange={(e) => handleFooterChange("newsletterTitle", e.target.value)}
+                        value={footerForm.values.newsletterTitle}
+                        onChange={footerForm.handleChange}
+                        placeholder={`${
+                          settingsData?.footer.newsletterTitle ||
+                          "Subscribe to our Newsletter"
+                        }`}
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="newsletterText">Newsletter Text</Label>
                       <Textarea
                         id="newsletterText"
-                        value={settings.footer.newsletterText}
-                        onChange={(e) => handleFooterChange("newsletterText", e.target.value)}
+                        value={footerForm.values.newsletterText}
+                        onChange={footerForm.handleChange}
+                        placeholder={`${
+                          settingsData?.footer.newsletterText ||
+                          "Get the latest updates and offers."
+                        }`}
                       />
                     </div>
                   </div>
@@ -437,8 +1128,10 @@ export default function CustomizePage() {
                     <div className="flex items-center space-x-2">
                       <Switch
                         id="showSocialLinks"
-                        checked={settings.footer.showSocialLinks}
-                        onCheckedChange={(checked) => handleFooterChange("showSocialLinks", checked)}
+                        checked={footerForm.values.showSocialLinks}
+                        onCheckedChange={(checked) => {
+                          productForm.setFieldValue("showSocialLinks", checked);
+                        }}
                       />
                       <Label htmlFor="showSocialLinks">Show Social Links</Label>
                     </div>
@@ -449,24 +1142,35 @@ export default function CustomizePage() {
                       <Label htmlFor="facebook">Facebook URL</Label>
                       <Input
                         id="facebook"
-                        value={settings.footer.facebook}
-                        onChange={(e) => handleFooterChange("facebook", e.target.value)}
+                        value={footerForm.values.facebook}
+                        onChange={footerForm.handleChange}
+                        placeholder={`${
+                          settingsData?.footer.facebook ||
+                          "https://facebook.com"
+                        }`}
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="twitter">Twitter URL</Label>
                       <Input
                         id="twitter"
-                        value={settings.footer.twitter}
-                        onChange={(e) => handleFooterChange("twitter", e.target.value)}
+                        value={footerForm.values.twitter}
+                        onChange={footerForm.handleChange}
+                        placeholder={`${
+                          settingsData?.footer.twitter || "https://twitter.com"
+                        }`}
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="instagram">Instagram URL</Label>
                       <Input
                         id="instagram"
-                        value={settings.footer.instagram}
-                        onChange={(e) => handleFooterChange("instagram", e.target.value)}
+                        value={footerForm.values.instagram}
+                        onChange={footerForm.handleChange}
+                        placeholder={`${
+                          settingsData?.footer.instagram ||
+                          "https://instagram.com"
+                        }`}
                       />
                     </div>
                   </div>
@@ -476,13 +1180,17 @@ export default function CustomizePage() {
                   <Label htmlFor="copyrightText">Copyright Text</Label>
                   <Input
                     id="copyrightText"
-                    value={settings.footer.copyrightText}
-                    onChange={(e) => handleFooterChange("copyrightText", e.target.value)}
+                    value={footerForm.values.copyrightText}
+                    onChange={footerForm.handleChange}
+                    placeholder="© 2023 ShopNow. All rights reserved."
                   />
                 </div>
               </CardContent>
               <CardFooter>
-                <Button onClick={handleSaveSettings} className="ml-auto flex items-center gap-2">
+                <Button
+                  onClick={() => footerForm.submitForm()}
+                  className="ml-auto flex items-center gap-2"
+                >
                   <Save className="h-4 w-4" />
                   Save Changes
                 </Button>
@@ -494,7 +1202,9 @@ export default function CustomizePage() {
             <Card>
               <CardHeader>
                 <CardTitle>Product Page Settings</CardTitle>
-                <CardDescription>Customize the appearance and features of product pages</CardDescription>
+                <CardDescription>
+                  Customize the appearance and features of product pages
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-4">
@@ -503,10 +1213,17 @@ export default function CustomizePage() {
                     <div className="flex items-center space-x-2">
                       <Switch
                         id="showRelatedProducts"
-                        checked={settings.product.showRelatedProducts}
-                        onCheckedChange={(checked) => handleProductChange("showRelatedProducts", checked)}
+                        checked={productForm.values.showRelatedProducts}
+                        onCheckedChange={(checked) => {
+                          productForm.setFieldValue(
+                            "showRelatedProducts",
+                            checked
+                          );
+                        }}
                       />
-                      <Label htmlFor="showRelatedProducts">Show Related Products</Label>
+                      <Label htmlFor="showRelatedProducts">
+                        Show Related Products
+                      </Label>
                     </div>
                   </div>
 
@@ -514,8 +1231,12 @@ export default function CustomizePage() {
                     <Label htmlFor="relatedProductsTitle">Section Title</Label>
                     <Input
                       id="relatedProductsTitle"
-                      value={settings.product.relatedProductsTitle}
-                      onChange={(e) => handleProductChange("relatedProductsTitle", e.target.value)}
+                      value={productForm.values.relatedProductsTitle}
+                      onChange={productForm.handleChange}
+                      placeholder={`${
+                        settingsData?.product.relatedProductsTitle ||
+                        "Related Products"
+                      }`}
                     />
                   </div>
                 </div>
@@ -526,8 +1247,11 @@ export default function CustomizePage() {
                     <div className="flex items-center space-x-2">
                       <Switch
                         id="showReviews"
-                        checked={settings.product.showReviews}
-                        onCheckedChange={(checked) => handleProductChange("showReviews", checked)}
+                        name="showReviews"
+                        checked={productForm.values.showReviews}
+                        onCheckedChange={(checked) => {
+                          productForm.setFieldValue("showReviews", checked);
+                        }}
                       />
                       <Label htmlFor="showReviews">Show Reviews</Label>
                     </div>
@@ -536,15 +1260,18 @@ export default function CustomizePage() {
                   <div className="flex items-center space-x-2">
                     <Switch
                       id="enableRatings"
-                      checked={settings.product.enableRatings}
-                      onCheckedChange={(checked) => handleProductChange("enableRatings", checked)}
+                      checked={productForm.values.enableRatings}
+                      onCheckedChange={productForm.handleChange}
                     />
                     <Label htmlFor="enableRatings">Enable Ratings</Label>
                   </div>
                 </div>
               </CardContent>
               <CardFooter>
-                <Button onClick={handleSaveSettings} className="ml-auto flex items-center gap-2">
+                <Button
+                  onClick={() => productForm.submitForm()}
+                  className="ml-auto flex items-center gap-2"
+                >
                   <Save className="h-4 w-4" />
                   Save Changes
                 </Button>
@@ -554,5 +1281,5 @@ export default function CustomizePage() {
         </Tabs>
       </div>
     </div>
-  )
+  );
 }
