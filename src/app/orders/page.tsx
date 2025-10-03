@@ -22,7 +22,7 @@ const orders = [
     paymentMethod: "Credit Card",
     shippingMethod: "Standard Shipping",
     trackingNumber: "TRK123456789",
-    items: [
+    itemsList: [
       { id: "1", name: "Premium Cotton T-Shirt", quantity: 2, price: 29.99 },
       { id: "4", name: "Smart Fitness Watch", quantity: 1, price: 89.99 },
     ],
@@ -52,7 +52,7 @@ const orders = [
     paymentMethod: "PayPal",
     shippingMethod: "Express Shipping",
     trackingNumber: "TRK987654321",
-    items: [{ id: "2", name: "Wireless Bluetooth Headphones", quantity: 1, price: 79.99 }],
+    itemsList: [{ id: "2", name: "Wireless Bluetooth Headphones", quantity: 1, price: 79.99 }],
     shippingAddress: {
       name: "John Doe",
       street: "123 Main St",
@@ -78,7 +78,7 @@ const orders = [
     items: 2,
     paymentMethod: "Credit Card",
     shippingMethod: "Standard Shipping",
-    items: [
+    itemsList: [
       { id: "3", name: "Leather Crossbody Bag", quantity: 1, price: 79.99 },
       { id: "5", name: "Slim Fit Jeans", quantity: 1, price: 44.99 },
     ],
@@ -108,7 +108,7 @@ const orders = [
     paymentMethod: "PayPal",
     shippingMethod: "Standard Shipping",
     trackingNumber: "TRK456789123",
-    items: [{ id: "7", name: "Wireless Charging Pad", quantity: 1, price: 39.99 }],
+    itemsList: [{ id: "7", name: "Wireless Charging Pad", quantity: 1, price: 39.99 }],
     shippingAddress: {
       name: "John Doe",
       street: "123 Main St",
@@ -133,7 +133,7 @@ const orders = [
     total: 89.99,
     items: 1,
     paymentMethod: "Credit Card",
-    items: [{ id: "8", name: "Running Shoes", quantity: 1, price: 89.99 }],
+    itemsList: [{ id: "8", name: "Running Shoes", quantity: 1, price: 89.99 }],
     shippingAddress: {
       name: "John Doe",
       street: "123 Main St",
@@ -165,7 +165,7 @@ export default function OrdersPage() {
     return matchesSearch && matchesStatus
   })
 
-  const toggleOrderDetails = (orderId) => {
+  const toggleOrderDetails = (orderId:any) => {
     if (expandedOrder === orderId) {
       setExpandedOrder(null)
     } else {
@@ -277,7 +277,7 @@ export default function OrdersPage() {
                                       <h4 className="mb-2 font-medium">Order Details</h4>
                                       <dl className="grid grid-cols-2 gap-1 text-sm">
                                         <dt className="text-muted-foreground">Items:</dt>
-                                        <dd>{order.items.length}</dd>
+                                        <dd>{order.itemsList.length}</dd>
                                         <dt className="text-muted-foreground">Payment Method:</dt>
                                         <dd>{order.paymentMethod}</dd>
                                         <dt className="text-muted-foreground">Shipping Method:</dt>
@@ -293,7 +293,7 @@ export default function OrdersPage() {
                                     <div>
                                       <h4 className="mb-2 font-medium">Items</h4>
                                       <ul className="space-y-1 text-sm">
-                                        {order.items.map((item) => (
+                                        {order.itemsList?.map((item:any) => (
                                           <li key={item.id} className="flex justify-between">
                                             <span>
                                               {item.quantity} x {item.name}
